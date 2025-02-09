@@ -16,15 +16,21 @@ const createJWT = (payload) => {
 }
 
 const verifyToken = (token) => {
-    let decoded = null
+    let decoded = null;
     try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET)
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
-        decoded = 'TokenExpiredError'
-        console.log('TokenExpiredError')
+        // Kiểm tra lỗi cụ thể
+        if (error.name === 'TokenExpiredError') {
+            console.error('Token đã hết hạn!');
+            return 'TokenExpiredError'; // trả về rõ ràng thông báo lỗi
+        } else {
+            console.error('Lỗi không xác định khi xác minh token:', error.message);
+        }
     }
-    return decoded
+    return decoded;
 }
+
 
 const insertTokenToDB = async (email, token, typeAccount) => {
     try {
