@@ -1,7 +1,6 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const db = require('../models/mysql/index');
-const bcrypt = require('bcrypt'); // Sử dụng bcrypt để mã hóa mật khẩu
 
 // Tạo JWT token
 const createJWT = (payload) => {
@@ -85,31 +84,6 @@ const findUserByEmail = async (email) => {
     }
 };
 
-// Thêm token vào cookies
-const insertTokenToCookies = (res, accessToken, refreshToken) => {
-    try {
-        res.cookie('refresh_token', refreshToken, {
-            maxAge: +process.env.MAX_AGE_REFRESH_TOKEN,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-        });
-
-        res.cookie('access_token', accessToken, {
-            maxAge: +process.env.MAX_AGE_ACCESS_TOKEN,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-        });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            EC: -1,
-            EM: 'Lỗi không xác định!',
-        });
-    }
-};
-
 // Đăng nhập người dùng
 const login = async (req, res) => {
     const { email, password } = req.body;
@@ -121,9 +95,8 @@ const login = async (req, res) => {
         return res.status(400).json({ EC, EM });
     }
 
-    // Kiểm tra mật khẩu (sử dụng bcrypt để so sánh mật khẩu đã mã hóa)
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    // So sánh mật khẩu (so sánh mật khẩu thuần túy, không mã hóa)
+    if (user.password !== password) {
         return res.status(400).json({ EC: -1, EM: 'Mật khẩu không đúng!' });
     }
 
@@ -167,6 +140,31 @@ const checkToken = (req, res, next) => {
 
     req.user = decoded; // Đặt thông tin người dùng vào req để sử dụng sau
     next();
+};
+
+// Thêm token vào cookies
+const insertTokenToCookies = (res, accessToken, refreshToken) => {
+    try {
+        res.cookie('refresh_token', refreshToken, {
+            maxAge: +process.env.MAX_AGE_REFRESH_TOKEN,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+        });
+
+        res.cookie('access_token', accessToken, {
+            maxAge: +process.env.MAX_AGE_ACCESS_TOKEN,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            EC: -1,
+            EM: 'Lỗi không xác định!',
+        });
+    }
 };
 
 module.exports = {
