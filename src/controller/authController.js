@@ -189,22 +189,30 @@ const updateUser = async (req, res) => {
 }
 
 const getUserAccount = (req, res) => {
-    console.log("User Data:", req.user); // Debug dữ liệu user
 
-    if (req.isAuthenticated()) {
-        return res.json({
-            EC: 0,
-            EM: 'Xác thực người dùng thành công!',
-            DT: req?.user ?? {}
-        });
-    } else {
-        return res.status(401).json({
-            EC: 1,
-            EM: 'Xác thực người dùng thất bại!',
-            DT: {}
-        });
+    try {
+        if (req.isAuthenticated()) {
+            return res.json({
+                EC: 0,
+                EM: 'Xác thực người dùng thành công!',
+                DT: req?.user ?? {}
+            });
+        } else {
+            res.status(401).json({
+                EC: 0,
+                EM: 'Xác thực người dùng thất bại!',
+                DT: {}
+            });
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            EC: -1,
+            EM: 'Lỗi không xác định!'
+        })
     }
-};
+
+}
 
 const getUserById = async (req, res) => {
 
