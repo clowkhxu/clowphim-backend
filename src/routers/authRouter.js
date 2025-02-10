@@ -8,7 +8,7 @@ const JWTActions = require('../middleware/JWTActions')
 
 const route = express.Router()
 
-route.all("*", JWTActions.verifyJWT)
+route.get('/user-account', authController.getUserAccount);
 route.post('/login', passportController.handleLogin)
 route.get('/logout', passportController.handleLogout)
 route.post('/register', authController.resgister)
